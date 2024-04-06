@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Stop Motion in the Browser</title>
+</head>
+<body>
+<video autoplay playsinline></video>
+<img src="">
+<canvas style="display:none;" width="640" height="480"></canvas>
+<script>
+  var video = document.querySelector('video');
+  var canvas = document.querySelector('canvas');
+  var ctx = canvas.getContext('2d');
+  var image = document.querySelector('img');
+  var blobs = [];
+
+  window.URL = window.URL || window.webkitURL;
+
+
+  function snapshot() {
+      var cw = video.clientWidth;
+      var ch = video.clientHeight;
+      ctx.drawImage(video, 0, 0, cw, ch, 0, 0, cw, ch);
+      
+//      image.src = canvas.toDataURL();
+      var blob = canvas.toBlob((blob)=>{
+        var url = URL.createObjectURL(blob);
+        image.src = url;
+        blobs.push(url);
+      });
+      
+      image.height = ch;
+      image.width = cw;
+  }
+
+  video.addEventListener('click', snapshot, false);
+  
+  navigator.mediaDevices.getUserMedia({ video: true,audio:false}).then(
+      function success(stream) {
+         video.srcObject=stream;
+});
+
+const fps = 30;
+var playback_start = null;
+var is_playing_back = false;
+function playbackLoop(timeStamp)
+{
+    if (!is_playing_back) return;
+    if (playback_start == null) {
+        playback_start = timeStamp;
+    }
+    var frame = Math.round((timeStamp - playback_start) * fps / 1000);
+    if (frame < blobs.length) {
+        image.src = blobs[frame];
+        requestAnimationFrame(playbackLoop);
+    } else {
+        playback_start = null;
+        is_playing_back = false;
+    }
+}
+
+function playback() {
+    console.log("playback");
+    is_playing_back = true;
+    requestAnimationFrame(playbackLoop);
+}
+
+image.addEventListener('click', playback, false);
+</script>
+</body>
+</html>
