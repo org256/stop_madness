@@ -3,9 +3,13 @@
 <head>
 <title>Stop Motion in the Browser</title>
 </head>
-<body>
-<label for="quantity">Fps (between 1 and 60):</label>
-<input type="number" id="framerate" name="framerate" min="1" max="60">
+<div id="buttons">
+    <label for="quantity">Fps (between 1 and 60):</label>
+    <input type="number" id="framerate" name="framerate" min="1" max="60" value="7">
+    <button type="button" id="take_photo">Take Photo</button>
+    <button type="button" id="playback">Playback</button>
+    <button type="button" id="flip">Flip Camera</button>
+</div>
 <video autoplay playsinline></video>
 <img src="">
 <canvas style="display:none;" width="640" height="480"></canvas>
@@ -15,8 +19,20 @@
   var ctx = canvas.getContext('2d');
   var image = document.querySelector('img');
   var blobs = [];
+  var take_photo = document.getElementById("take_photo");
+  var playback_button = document.getElementById("playback");
+  var flip_camera = document.getElementById("flip");
+  var front = false;
 
   window.URL = window.URL || window.webkitURL;
+
+  flip_camera.onclick = () => {
+    front = !front;
+  }
+
+  const constraints = {
+    video: { facingMode: front ? "user" : "enviroment" },
+  }
 
 
   function snapshot() {
@@ -35,7 +51,9 @@
       image.width = cw;
   }
 
-  video.addEventListener('click', snapshot, false);
+  take_photo.addEventListener("click", snapshot, false);
+
+  //video.addEventListener('click', snapshot, false);
   
   navigator.mediaDevices.getUserMedia({ video: true,audio:false}).then(
       function success(stream) {
@@ -69,7 +87,8 @@ function playback() {
     requestAnimationFrame(playbackLoop);
 }
 
-image.addEventListener('click', playback, false);
+playback_button.addEventListener("click", playback, false);
+//image.addEventListener('click', playback, false);
 </script>
 </body>
 </html>
